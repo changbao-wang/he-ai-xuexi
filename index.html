@@ -83,6 +83,9 @@
       footer { flex-direction: column; }
     }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; } }
+
+    /* DAILY COMPONENTS */
+    .daily-teaser{padding:26px;border:1px solid var(--line);background:var(--panel);border-radius:6px}.daily-teaser h3{font-size:22px;margin:10px 0}.daily-teaser p{color:var(--muted);font-size:14px}.daily-teaser .meta{font-size:12px;color:var(--accent)}@media(max-width:700px){nav{gap:12px}.topbar{flex-wrap:wrap;gap:4px;padding:10px 0}.brand{font-size:14px}}
   </style>
 </head>
 <body>
@@ -90,6 +93,7 @@
     <header class="topbar">
       <a class="brand" href="#top"><span>和AI一起学习</span></a>
       <nav aria-label="主导航">
+        <a href="daily/">日报</a>
         <a href="#learning">学习中</a>
         <a href="#notes">笔记</a>
         <a href="#projects">实践</a>
@@ -106,6 +110,10 @@
           <a class="button" href="#learning">看看我在学什么</a>
         </div>
       </section>
+
+      <!-- DAILY:START -->
+      <section id="daily"><div class="section-head"><div><p class="kicker">DAILY / 最近整理</p><h2>每天读一点，再想深一点</h2></div><a class="button" href="daily/">全部日报 →</a></div><article class="daily-teaser"><p class="meta">2026-10-11 · AI 日报 · 3 个主题</p><h3>从产业应用到技能学习：AI 如何进入真实工作</h3><p>从今日 ChatGPT“每日重点简报”中筛选三个 AI 相关主题，补齐原始来源，并把新闻转化为可继续研究的学习问题。</p><a class="button primary" href="daily/2026-10-11/">阅读本期 →</a></article></section>
+      <!-- DAILY:END -->
 
       <section id="learning">
         <div class="section-head">
