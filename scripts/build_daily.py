@@ -1,6 +1,7 @@
-"""用已核验的 JSON 日报生成静态网页；仅依赖 Python 标准库。"""
+"""将核验后的日报生成为静态阅读站；只依赖 Python 标准库。"""
 import html
 import json
+import math
 import re
 from datetime import date
 from pathlib import Path
@@ -8,6 +9,7 @@ from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 START, END = "<!-- DAILY:START -->", "<!-- DAILY:END -->"
+ASSET_VERSION = "2"
 
 
 def esc(value):
@@ -27,6 +29,9 @@ def validate(report, filename):
     for key in ("title", "summary", "coverage"):
         if not isinstance(report.get(key), str) or not report[key].strip():
             raise ValueError(f"日报缺少 {key}")
+    topics = report.get("topics", [])
+    if not isinstance(topics, list) or not all(isinstance(t, str) and t.strip() for t in topics):
+        raise ValueError("主题必须为非空文字组成的列表")
     if not report.get("items"):
         raise ValueError("已发布日报至少需要一条已核验消息")
     for item in report["items"]:
@@ -47,40 +52,123 @@ def validate(report, filename):
                 raise ValueError("来源需要名称")
 
 
-EXTRA_CSS = """
-.article-head{padding:70px 0 35px;border-top:0}.article-head h1{font-size:clamp(30px,5vw,48px);max-width:900px;line-height:1.4;text-wrap:balance}.article-head .intro{font-size:16px}.editor-note{padding:18px 22px;border-left:2px solid var(--accent);background:var(--panel);color:var(--muted);font-size:14px;margin:22px 0}.news-item{max-width:800px;padding:35px 0}.news-item h2{font-size:24px;line-height:1.6;margin-bottom:18px}.news-item p{color:#c1c9bd;line-height:1.9}.news-item h3{font-size:14px;color:var(--accent);margin:26px 0 8px}.news-date,.source-list{font-size:13px;color:var(--muted)}.source-list a{color:var(--accent);overflow-wrap:anywhere;display:inline-block;padding:10px 0}.question{background:var(--panel-soft);padding:16px 20px;border-radius:5px}.archive-card{display:block;text-decoration:none;padding:28px 0;border-bottom:1px solid var(--line)}.archive-card h2{font-size:23px;margin:8px 0 12px}.archive-card p{color:var(--muted);font-size:14px;max-width:760px}.archive-card:hover h2{color:var(--accent)}.topics{color:var(--accent);font:12px var(--mono)}.reading-nav{display:flex;justify-content:space-between;gap:20px;padding:26px 0}.reading-nav a{padding:10px 0;color:var(--accent);font-size:14px}.suggestions{padding-left:24px;line-height:2}.daily-teaser{padding:26px;border:1px solid var(--line);background:var(--panel);border-radius:6px}.daily-teaser h3{font-size:22px;margin:10px 0}.daily-teaser p{color:var(--muted);font-size:14px}.daily-teaser .meta{font-size:12px;color:var(--accent)}
-@media(max-width:700px){nav{gap:12px}.topbar{flex-wrap:wrap;gap:4px;padding:10px 0}.brand{font-size:14px}.article-head{padding-top:44px}.news-item h2{font-size:21px}.daily-teaser{padding:20px}}
-"""
+def tags(report):
+    return '<div class="tag-list">' + "".join(f'<span class="tag">{esc(t)}</span>' for t in report.get("topics", [])) + "</div>"
 
 
-def page(title, description, body, prefix, base_css):
+def searchable(report):
+    fields = [report["date"], report["date"].replace("-", "."), report["title"], report["summary"], report["coverage"], *report.get("topics", []), *report.get("learning_suggestions", [])]
+    for item in report["items"]:
+        fields.extend(item[k] for k in ("title", "summary", "interpretation", "question", "event_date"))
+        for source in item["sources"]:
+            fields.extend((source["name"], source["published_date"]))
+    return " ".join(fields)
+
+
+def reading_minutes(report):
+    return max(1, math.ceil(len(searchable(report)) / 350))
+
+
+def bookmark(day):
+    return f'''<button class="bookmark-button js-only" type="button" data-bookmark="{day}" aria-pressed="false" aria-label="收藏 {day} 日报"><svg width="16" height="18" viewBox="0 0 16 18" fill="none" aria-hidden="true"><path d="M3 2h10v14l-5-3-5 3V2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span data-bookmark-label>收藏</span></button>'''
+
+
+def page(title, description, body, prefix, reading=False):
+    progress = '<div class="reading-progress js-only" data-reading-progress aria-hidden="true"></div>' if reading else ""
     return f'''<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101311"><meta name="description" content="{esc(description)}"><title>{esc(title)} · 常宝 · 和AI一起学习</title><style>{base_css}\n{EXTRA_CSS}</style></head><body><div class="shell">
-<header class="topbar"><a class="brand" href="{prefix}index.html"><span>和AI一起学习</span></a><nav aria-label="主导航"><a href="{prefix}daily/" aria-current="page">日报</a><a href="{prefix}index.html#learning">学习中</a><a href="{prefix}index.html#notes">笔记</a><a href="{prefix}index.html#projects">实践</a></nav></header>
-<main>{body}</main><footer><span>持续学习，把理解变成实践。</span><a href="{prefix}index.html">返回首页</a></footer></div></body></html>\n'''
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f7f6f2"><meta name="description" content="{esc(description)}">
+<title>{esc(title)} · 常宝 · 和AI一起学习</title>
+<link rel="icon" href="{prefix}assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="{prefix}assets/site.css?v={ASSET_VERSION}">
+<script src="{prefix}assets/site.js?v={ASSET_VERSION}" defer></script>
+</head>
+<body id="top">{progress}
+<a class="skip-link" href="#main-content">跳到正文</a>
+<header class="site-header"><div class="shell header-inner">
+<a class="brand" href="{prefix}index.html"><span class="brand-mark" aria-hidden="true">和</span><span>和AI一起学习</span></a>
+<button class="menu-toggle js-only" type="button" data-menu-toggle aria-controls="main-nav" aria-expanded="false" aria-label="展开导航">菜单 <span aria-hidden="true">☰</span></button>
+<nav class="main-nav" id="main-nav" aria-label="主导航"><a href="{prefix}index.html">首页</a><a href="{prefix}daily/" aria-current="page">AI 日报</a><a href="{prefix}index.html#learning">学习方向</a><a href="{prefix}index.html#projects">实践手记</a><a href="{prefix}index.html#about">关于常宝</a></nav>
+</div></header>
+<main class="shell" id="main-content">{body}</main>
+<footer class="site-footer"><div class="shell footer-inner"><a class="footer-brand" href="{prefix}index.html">和AI一起学习<span> / 常宝的学习手记</span></a><span>慢慢理解，持续实践。</span><a class="back-top" href="#top">回到顶部 ↑</a></div></footer>
+</body></html>
+'''
 
 
-def article(report, reports, base_css):
+def article(report, reports):
     day = report["date"]
-    blocks = []
+    blocks, toc = [], []
     for n, item in enumerate(report["items"], 1):
-        sources = "".join(f'<li><a href="{esc(s["url"])}" target="_blank" rel="noopener noreferrer">{esc(s["name"])} ↗</a>（发布于 {esc(s["published_date"])}）</li>' for s in item["sources"])
-        blocks.append(f'''<section class="news-item"><p class="kicker">{n:02d} / NEWS</p><h2>{esc(item['title'])}</h2><p class="news-date">消息 / 资料日期：{esc(item['event_date'])}</p><h3>发生了什么</h3><p>{esc(item['summary'])}</p><h3>为什么值得研究 · AI 整理</h3><p>{esc(item['interpretation'])}</p><h3>继续学习的问题</h3><p class="question">{esc(item['question'])}</p><h3>原文与来源</h3><ul class="source-list">{sources}</ul></section>''')
+        anchor = f"news-{n}"
+        sources = "".join(f'<li><a href="{esc(s["url"])}" target="_blank" rel="noopener noreferrer">{esc(s["name"])} <span aria-hidden="true">↗</span></a><span>发布于 {esc(s["published_date"])}</span></li>' for s in item["sources"])
+        toc.append(f'<li><a href="#{anchor}"><span>{n:02d}</span>{esc(item["title"])}</a></li>')
+        blocks.append(f'''<section class="news-item" id="{anchor}">
+<p class="eyebrow">观察 {n:02d}</p><h2>{esc(item["title"])}</h2>
+<p class="news-date">消息 / 资料日期：<time datetime="{esc(item["event_date"])}">{esc(item["event_date"])}</time></p>
+<h3>发生了什么</h3><p>{esc(item["summary"])}</p>
+<h3>为什么值得研究 <span class="ai-label">AI 整理</span></h3><p>{esc(item["interpretation"])}</p>
+<div class="question"><span class="eyebrow">留一个问题</span><p>{esc(item["question"])}</p></div>
+<details class="source-list"><summary>核验来源 · {len(item["sources"])} 篇原文 <span aria-hidden="true">↗</span></summary><ul>{sources}</ul></details>
+</section>''')
     suggestions = "".join(f"<li>{esc(s)}</li>" for s in report.get("learning_suggestions", []))
     idx = reports.index(report)
-    older = f'<a href="../{reports[idx+1]["date"]}/">← 上一期</a>' if idx + 1 < len(reports) else '<span></span>'
-    newer = f'<a href="../{reports[idx-1]["date"]}/">下一期 →</a>' if idx > 0 else '<a href="../">查看全部日报 →</a>'
-    body = f'''<div class="article-head"><p class="eyebrow">AI DAILY / <time datetime="{day}">{day}</time></p><h1>{esc(report['title'])}</h1><p class="intro">{esc(report['summary'])}</p><p class="topics">{' / '.join(esc(t) for t in report.get('topics', []))}</p><p class="editor-note">{esc(report['coverage'])}<br>由 ChatGPT“每日重点简报”筛选整理，关键事实已核对来源。解读和练习为 AI 整理的学习建议，供继续探索。</p></div>{''.join(blocks)}<section class="news-item"><p class="kicker">LEARN / NEXT</p><h2>可以动手做的一个小练习</h2><ol class="suggestions">{suggestions}</ol><p class="news-date">这些是建议练习，尚未标记为个人已完成成果。</p></section><nav class="reading-nav" aria-label="日报翻页">{older}{newer}</nav>'''
-    return page(f"AI 日报 · {day}", report["summary"], body, "../../", base_css)
+    older = f'<a href="../{reports[idx+1]["date"]}/"><span>← 上一期</span><strong>{esc(reports[idx+1]["title"])}</strong></a>' if idx + 1 < len(reports) else '<a href="../"><span>← 回到目录</span><strong>翻阅全部学习日报</strong></a>'
+    newer = f'<a href="../{reports[idx-1]["date"]}/"><span>下一期 →</span><strong>{esc(reports[idx-1]["title"])}</strong></a>' if idx > 0 else '<a href="../"><span>继续阅读 →</span><strong>浏览日报归档</strong></a>'
+    body = f'''<div class="breadcrumb"><a href="../../index.html">首页</a><span>/</span><a href="../">学习日报</a><span>/</span><span>{day}</span></div>
+<header class="article-head"><p class="eyebrow">THE DAILY NOTE / 学习日报</p>{tags(report)}<h1>{esc(report["title"])}</h1><p class="intro">{esc(report["summary"])}</p>
+<div class="article-meta"><span>常宝的学习手记</span><time datetime="{day}">{day}</time><span>约 {reading_minutes(report)} 分钟阅读</span>{bookmark(day)}<button type="button" class="button quiet js-only" data-copy-link>复制链接 ↗</button></div>
+<p class="feedback" data-storage-status role="status"></p><p class="feedback" data-share-status role="status"></p>
+</header>
+<div class="article-layout"><article class="article-body" data-reading-body>
+<div class="editor-note"><span class="eyebrow">本期说明</span><p>{esc(report["coverage"])}</p><p>由 ChatGPT“每日重点简报”筛选整理，关键事实已核对来源。解读和练习为 AI 整理的学习建议，供继续探索。</p></div>
+{"".join(blocks)}
+<section class="practice-block" id="practice"><p class="eyebrow">FROM READING TO DOING</p><h2>把一个问题，变成一次尝试。</h2><ol>{suggestions}</ol><p class="news-date">以上为建议练习，尚未标记为个人已完成成果。</p></section>
+</article><aside class="article-toc" aria-label="本期阅读目录"><p class="eyebrow">本期目录</p><ol class="toc-list">{"".join(toc)}<li><a href="#practice"><span>↗</span>动手做一个小练习</a></li></ol><div class="toc-note">读到这里，有没有一个问题<br>值得自己试一试？</div><a class="text-link" href="../">查看全部日报 →</a></aside></div>
+<nav class="reading-nav" aria-label="日报翻页">{older}{newer}</nav>'''
+    return page(f"AI 日报 · {day}", report["summary"], body, "../../", reading=True)
+
+
+def archive(reports):
+    cards = []
+    topics = sorted({t for report in reports for t in report.get("topics", [])})
+    for n, r in enumerate(reports):
+        day = r["date"]
+        cards.append(f'''<article class="archive-card" data-report data-date="{day}" data-search="{esc(searchable(r))}" data-topics="{esc(json.dumps(r.get("topics", []), ensure_ascii=False))}">
+<div class="archive-meta"><time datetime="{day}">{day.replace("-", ".")}</time><span>第 {len(reports)-n:02d} 期</span></div>
+<div class="archive-content">{tags(r)}<h2 class="archive-title"><a href="{day}/">{esc(r["title"])}</a></h2><p class="archive-summary">{esc(r["summary"])}</p><div class="archive-footer"><span>{len(r["items"])} 则观察 · 约 {reading_minutes(r)} 分钟</span><a class="text-link" href="{day}/">阅读这期 <span aria-hidden="true">↗</span></a></div></div>{bookmark(day)}</article>''')
+    filters = '<button type="button" class="filter-chip" data-topic="" aria-pressed="true">全部主题</button>' + "".join(f'<button type="button" class="filter-chip" data-topic="{esc(t)}" aria-pressed="false">{esc(t)}</button>' for t in topics)
+    body = f'''<header class="page-hero"><p class="eyebrow">THE DAILY NOTES / 日常积累</p><h1>每天读一点，<br><em>再想深一点。</em></h1><p class="intro">把值得留意的 AI 进展，整理成可以回看的学习线索。<br>每一期，都留下来源、问题和下一次实践的起点。</p><div class="archive-overview"><span><strong>{len(reports):02d}</strong> 期学习日报</span><span>最近更新 <time datetime="{reports[0]["date"]}">{reports[0]["date"].replace("-", ".")}</time></span></div></header>
+<section data-archive aria-label="日报归档">
+<div class="archive-tools js-only"><label class="search-field" for="daily-search"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="m16 16 5 5" stroke="currentColor" stroke-width="1.5"/></svg><span class="sr-only">搜索日报全文</span><input id="daily-search" type="search" placeholder="搜索一个话题、关键词或日期…" autocomplete="off"></label><button class="button quiet" type="button" data-saved-filter aria-pressed="false">只看收藏</button></div>
+<div class="filter-list js-only" aria-label="按主题筛选">{filters}</div>
+<div class="archive-caption"><p id="result-count" role="status" aria-live="polite">{len(reports)} 篇日报</p><span>按时间倒序排列</span></div>
+<p class="feedback" data-storage-status role="status"></p>
+<div class="archive-list">{"".join(cards)}</div>
+<div id="archive-empty" class="empty-state" hidden><span aria-hidden="true">⌕</span><h2>还没有找到这条学习线索</h2><p>换一个关键词，或调整主题与收藏筛选。</p><button class="button" type="button" id="clear-filters">显示全部日报</button></div>
+<p class="local-note js-only">收藏保存在当前浏览器中，方便下次接着读。</p>
+<noscript><p class="local-note">所有日报均可直接阅读。启用 JavaScript 后可使用搜索、筛选和本机收藏。</p></noscript>
+</section>'''
+    return page("学习日报", "和AI一起学习：搜索、按主题筛选和收藏 AI 日报，回看原始来源与学习问题。", body, "../")
+
+
+def teaser(reports):
+    latest = reports[0]
+    older = reports[1] if len(reports) > 1 else None
+    recent = f'<div class="daily-previous"><span class="eyebrow">也值得回看</span><a href="daily/{older["date"]}/">{esc(older["title"])} <span aria-hidden="true">↗</span></a><time datetime="{older["date"]}">{older["date"].replace("-", ".")}</time></div>' if older else '<p class="section-note">从第一期开始，一点点积累。</p>'
+    return f'''{START}
+<section id="daily" class="home-daily"><div class="section-head"><div><p class="eyebrow">01 / DAILY NOTES</p><h2>新鲜的观察，慢慢的思考。</h2></div><a class="text-link" href="daily/">翻阅全部日报 <span aria-hidden="true">↗</span></a></div>
+<div class="daily-layout"><article class="daily-feature"><div class="daily-date"><span class="eyebrow">最新一期</span><time datetime="{latest["date"]}">{latest["date"].replace("-", ".")}</time></div>{tags(latest)}<h3><a href="daily/{latest["date"]}/">{esc(latest["title"])}</a></h3><p>{esc(latest["summary"])}</p><div class="daily-feature-footer"><a class="button primary" href="daily/{latest["date"]}/">阅读这期日报 <span aria-hidden="true">↗</span></a><span>{len(latest["items"])} 则观察 · 约 {reading_minutes(latest)} 分钟</span></div></article>
+<aside class="daily-side"><p class="eyebrow">一点点积累，也算数。</p><div class="daily-stats"><div><strong>{len(reports):02d}</strong><span>期学习日报</span></div><div><strong>{sum(len(r["items"]) for r in reports):02d}</strong><span>则前沿观察</span></div></div>{recent}<a class="text-link js-only" href="daily/?saved=1">打开我的收藏 →</a></aside></div></section>
+{END}'''
 
 
 def main():
     home = (ROOT / "index.html").read_text(encoding="utf-8-sig")
-    home = "\n".join(line.rstrip() for line in home.splitlines()) + "\n"
-    style = re.search(r"<style>(.*?)</style>", home, re.S)
-    if not style or home.count(START) != 1 or home.count(END) != 1:
-        raise ValueError("首页缺少唯一的样式区或日报更新标记")
-    base_css = style.group(1)
+    if home.count(START) != 1 or home.count(END) != 1 or home.index(START) > home.index(END):
+        raise ValueError("首页缺少唯一且顺序正确的日报更新标记")
     reports = []
     for filename in sorted((ROOT / "content/daily").glob("*.json")):
         report = json.loads(filename.read_text(encoding="utf-8-sig"))
@@ -93,34 +181,13 @@ def main():
     reports.sort(key=lambda r: r["date"], reverse=True)
     if not reports:
         raise ValueError("没有可发布的日报")
-    outputs = {}
-    for report in reports:
-        outputs[ROOT / "daily" / report["date"] / "index.html"] = article(report, reports, base_css)
-    cards = "".join(f'''<a class="archive-card" href="{r['date']}/"><span class="meta">{r['date']} · {len(r['items'])} 个主题</span><h2>{esc(r['title'])} →</h2><p>{esc(r['summary'])}</p><span class="topics">{' / '.join(esc(t) for t in r.get('topics', []))}</span></a>''' for r in reports)
-    body = f'''<div class="article-head"><p class="eyebrow">DAILY / ARCHIVE</p><h1>AI 日报</h1><p class="intro">从每天读到的信息出发，留下来源、理解和下一步想弄懂的问题。</p><p class="news-date">已归档 {len(reports)} 期 · 最新整理 {reports[0]['date']}</p></div><div>{cards}</div>'''
-    outputs[ROOT / "daily/index.html"] = page("AI 日报目录", "和AI一起学习：按日期回看 AI 日报、原始来源与学习问题。", body, "../", base_css)
-    latest = reports[0]
-    teaser = f'''{START}
-      <section id="daily"><div class="section-head"><div><p class="kicker">DAILY / 最近整理</p><h2>每天读一点，再想深一点</h2></div><a class="button" href="daily/">全部日报 →</a></div><article class="daily-teaser"><p class="meta">{latest['date']} · AI 日报 · {len(latest['items'])} 个主题</p><h3>{esc(latest['title'])}</h3><p>{esc(latest['summary'])}</p><a class="button primary" href="daily/{latest['date']}/">阅读本期 →</a></article></section>
-      {END}'''
-    # 首页新增的组件使用相同配色；保持构建重复运行时输出不变。
-    marker = "/* DAILY COMPONENTS */"
-    extra_home_css = f"\n    {marker}\n    .daily-teaser{{padding:26px;border:1px solid var(--line);background:var(--panel);border-radius:6px}}.daily-teaser h3{{font-size:22px;margin:10px 0}}.daily-teaser p{{color:var(--muted);font-size:14px}}.daily-teaser .meta{{font-size:12px;color:var(--accent)}}@media(max-width:700px){{nav{{gap:12px}}.topbar{{flex-wrap:wrap;gap:4px;padding:10px 0}}.brand{{font-size:14px}}}}\n"
-    if marker not in home:
-        home = home.replace("</style>", extra_home_css + "  </style>", 1)
-        # 文章同样继承首页最终样式，使首次和后续构建保持一致。
-        return rebuild_after_style(home)
-    home = home[:home.index(START)] + teaser + home[home.index(END) + len(END):]
-    outputs[ROOT / "index.html"] = home
+    outputs = {ROOT / "daily" / r["date"] / "index.html": article(r, reports) for r in reports}
+    outputs[ROOT / "daily/index.html"] = archive(reports)
+    outputs[ROOT / "index.html"] = home[:home.index(START)] + teaser(reports) + home[home.index(END) + len(END):]
     for filename, content in outputs.items():
         filename.parent.mkdir(parents=True, exist_ok=True)
-        filename.write_text(content, encoding="utf-8", newline="\n")
-    print(f"已生成 {len(reports)} 期日报、日报目录和首页入口。")
-
-
-def rebuild_after_style(home):
-    (ROOT / "index.html").write_text(home, encoding="utf-8", newline="\n")
-    main()
+        filename.write_text("\n".join(line.rstrip() for line in content.splitlines()) + "\n", encoding="utf-8", newline="\n")
+    print(f"已生成 {len(reports)} 期日报、可搜索归档和首页最新入口。")
 
 
 if __name__ == "__main__":
