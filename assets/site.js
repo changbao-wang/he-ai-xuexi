@@ -82,6 +82,9 @@
       const count = archive.querySelector('#result-count');
       const empty = archive.querySelector('#archive-empty');
       const clear = archive.querySelector('#clear-filters');
+      const moreTopics = archive.querySelector('[data-more-topics]');
+      const moreTopicButtons = moreTopics ? Array.from(moreTopics.querySelectorAll('[data-topic]')) : [];
+      const activeTopicStatus = archive.querySelector('[data-active-topic]');
       const reports = Array.from(archive.querySelectorAll('[data-report]')).map(function (element) {
         let topics = [];
         try {
@@ -128,6 +131,11 @@
           if (matches) visible += 1;
         });
         topicButtons.forEach(function (button) { button.setAttribute('aria-pressed', String(button.dataset.topic === activeTopic)); });
+        if (moreTopics && moreTopicButtons.some(function (button) { return button.dataset.topic === activeTopic; })) moreTopics.open = true;
+        if (activeTopicStatus) {
+          activeTopicStatus.hidden = !activeTopic;
+          activeTopicStatus.textContent = activeTopic ? '当前主题：' + activeTopic : '';
+        }
         if (savedButton) savedButton.setAttribute('aria-pressed', String(onlySaved));
         if (count) count.textContent = visible + ' 篇日报';
         if (empty) empty.hidden = visible !== 0;
@@ -160,6 +168,15 @@
       readQuery();
     }
     refreshBookmarks();
+
+    const tocPanel = document.querySelector('[data-toc-panel]');
+    if (tocPanel && typeof window.matchMedia === 'function') {
+      const mobileReading = window.matchMedia('(max-width: 760px)');
+      function adaptToc() { tocPanel.open = !mobileReading.matches; }
+      adaptToc();
+      if (typeof mobileReading.addEventListener === 'function') mobileReading.addEventListener('change', adaptToc);
+      else if (typeof mobileReading.addListener === 'function') mobileReading.addListener(adaptToc);
+    }
 
     const menuToggle = document.querySelector('[data-menu-toggle]');
     const navigation = document.querySelector('#main-nav');

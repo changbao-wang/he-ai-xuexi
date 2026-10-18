@@ -20,3 +20,103 @@
 /* Keep decorative artwork inside the page at narrow widths. */
 .home-hero{overflow:hidden}.hero-copy,.hero-art{min-width:0}.learning-card p,.about-copy p,.daily-feature>p:not(.daily-date){font-size:14px}.button,.text-link{font-size:13px}.filter-chip{font-size:12px}.archive-summary{font-size:14px}
 html:not(.js) .js-only{display:none!important}
+
+/* Reading-first refinement: keep the paper-and-pine theme, bring records forward. */
+.header-inner{min-height:80px}
+.home-hero{display:block;min-height:0;padding:38px 0 30px;overflow:visible}
+.home-hero .hero-copy{max-width:850px}
+.home-hero .hero-copy>.eyebrow{margin-bottom:12px;font-size:12px;letter-spacing:.03em}
+.home-hero h1{font-size:clamp(30px,3.4vw,44px);line-height:1.45;letter-spacing:-.025em;margin:0 0 12px;text-wrap:balance}
+.home-hero .intro{font-size:15px;line-height:1.9}
+.home-hero .hero-actions{gap:22px;margin-top:20px}
+.home-hero .hero-actions .button{font-size:13px;min-height:44px}
+.home-daily{padding:28px 0 46px}
+.home-daily .section-head{margin-bottom:22px}
+.home-daily .section-head .eyebrow{margin-bottom:7px}
+.home-daily .section-head h2{font-size:28px}
+.daily-layout{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:28px}
+.daily-feature{min-width:0;min-height:0;padding:28px}
+.daily-feature h3{max-width:none}
+.daily-feature-footer{display:flex;align-items:center;flex-wrap:wrap;gap:14px}
+.daily-side{min-width:0;background:transparent;border-left:1px solid var(--line);padding:4px 0 0 26px;justify-content:flex-start}
+.daily-side h3{font:600 15px/1.8 var(--sans);margin:0 0 14px}
+.recent-notes{list-style:none;margin:0;padding:0}
+.recent-notes li{padding:13px 0}
+.recent-notes li:first-child{padding-top:0}
+.recent-notes li+li{border-top:1px solid var(--line)}
+.recent-notes time{display:block;color:var(--muted);font:12px/1.8 var(--mono);margin-bottom:4px}
+.recent-notes a{display:block;font-size:14px;line-height:1.8;text-decoration:none}
+.recent-notes a:hover{text-decoration:underline}
+.daily-side-footer{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-top:16px}
+.daily-side .daily-side-footer p{font-size:12px;color:var(--muted);margin:0}
+.daily-side .daily-side-footer .text-link{font-size:13px}
+.home-section{padding-block:48px}
+.learning-card p,.about-copy p{font-size:15px}
+.project-heading p,.project-content{font-size:14px}
+.project-detail[open] .project-heading h3{color:var(--accent)}
+.project-category,.project-label,.track-status,.track-number,.news-date,.article-meta,
+.source-list,.source-list span,.toc-list a,.archive-meta,.archive-footer>span,
+.daily-feature-footer>span,.local-note,.storage-note,.feedback,.archive-count,
+.breadcrumb,.reading-nav,.reading-nav span,.about-location,.project-next span{font-size:12px}
+.article-meta,.archive-meta,.news-item>.news-date,.source-list span,.local-note,.storage-note{color:var(--muted)}
+.news-item>.news-date,.editor-note .eyebrow,.question .eyebrow,.ai-label{font-size:12px}
+.editor-note{font-size:14px;line-height:1.9}
+.practice-block ol,.practice-block ul{font-size:14px;line-height:1.95}
+.project-category{letter-spacing:.025em}
+.project-label{padding:4px 8px;color:var(--muted)}
+.tag{font-size:12px}
+.bookmark-button,.filter-chip{font-size:13px;min-height:44px}
+.filter-chip{transition:background .18s,color .18s,border-color .18s}
+.button:active,.filter-chip:active,.bookmark-button:active{transform:translateY(1px)}
+.js .topic-filters{display:block}
+.topic-filters>.filter-list{gap:8px}
+.topic-count{font:12px/1.5 var(--mono);opacity:.75;margin-left:4px}
+.more-topics{margin-top:8px}
+.more-topics>summary{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:6px 12px;border:1px solid var(--line);border-radius:3px;font-size:13px;color:var(--accent);cursor:pointer;list-style:none}
+.more-topics>summary::-webkit-details-marker,.toc-panel>summary::-webkit-details-marker{display:none}
+.more-topics>.filter-list{padding-top:12px;gap:8px}
+.disclosure-icon{display:inline-block;font:18px/1 var(--sans);transition:transform .18s}
+details[open]>summary>.disclosure-icon{transform:rotate(180deg)}
+.active-topic{font-size:12px;color:var(--accent);margin:12px 0 0}
+.article-toc{padding:0;border:0}
+.toc-panel{border-left:1px solid var(--line);padding-left:20px}
+.toc-panel>summary{display:flex;align-items:center;gap:10px;min-height:44px;color:var(--accent);font-size:14px;font-weight:600;cursor:pointer;list-style:none}
+.toc-count{font-size:12px;font-weight:400;color:var(--muted);margin-left:auto;white-space:nowrap}
+.toc-content{padding-top:14px}
+.toc-list a{font-size:13px;color:var(--muted)}
+.toc-list a span{font-size:12px}
+.toc-content>.text-link{margin-top:10px}
+.page-hero{padding:40px 0 28px}
+.page-hero h1{font-size:36px}
+@keyframes note-arrive{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.daily-feature{animation:note-arrive .3s cubic-bezier(.2,.7,.3,1) both}
+@media(max-width:760px){
+  .header-inner{min-height:76px}
+  .home-hero{padding:28px 0 24px}
+  .home-hero h1{font-size:30px;line-height:1.5;text-wrap:initial}
+  .home-hero .intro{font-size:14px}
+  .home-hero .hero-actions{gap:18px;margin-top:18px}
+  .home-daily{padding:24px 0 36px}
+  .home-daily .section-head h2{font-size:24px}
+  .home-daily .section-head>.text-link{font-size:13px}
+  .daily-layout{grid-template-columns:minmax(0,1fr);gap:24px}
+  .daily-feature{padding:22px}
+  .daily-feature h3{font-size:23px}
+  .daily-side{border-left:0;padding:0}
+  .daily-side h3{font-size:15px}
+  .home-section{padding-block:36px}
+  .project-detail summary{grid-template-columns:24px minmax(0,1fr) 20px;gap:8px 12px}
+  .project-label{display:inline-block;grid-column:2;grid-row:2}
+  .project-toggle{grid-column:3;grid-row:1}
+  .project-heading p,.project-content,.learning-card p,.about-copy p{font-size:14px}
+  .project-content{padding-left:36px;padding-right:0}
+  .article-layout{gap:20px}
+  .article-toc{display:block;border:0;padding:0;width:100%}
+  .toc-panel{border:1px solid var(--line);padding:10px 16px;background:var(--paper)}
+  .toc-panel>summary{min-height:36px}
+  .toc-content{padding:10px 0 6px}
+  .toc-list li{margin-bottom:14px}
+  .page-hero{padding:30px 0 22px}
+  .page-hero h1{font-size:30px}
+  .page-hero .intro{font-size:14px}
+}

@@ -3,13 +3,14 @@ import html
 import json
 import math
 import re
+from collections import Counter
 from datetime import date
 from pathlib import Path
 from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 START, END = "<!-- DAILY:START -->", "<!-- DAILY:END -->"
-ASSET_VERSION = "2"
+ASSET_VERSION = "3"
 
 
 def esc(value):
@@ -90,7 +91,7 @@ def page(title, description, body, prefix, reading=False):
 <header class="site-header"><div class="shell header-inner">
 <a class="brand" href="{prefix}index.html"><span class="brand-mark" aria-hidden="true">和</span><span>和AI一起学习</span></a>
 <button class="menu-toggle js-only" type="button" data-menu-toggle aria-controls="main-nav" aria-expanded="false" aria-label="展开导航">菜单 <span aria-hidden="true">☰</span></button>
-<nav class="main-nav" id="main-nav" aria-label="主导航"><a href="{prefix}index.html">首页</a><a href="{prefix}daily/" aria-current="page">AI 日报</a><a href="{prefix}index.html#learning">学习方向</a><a href="{prefix}index.html#projects">实践手记</a><a href="{prefix}index.html#about">关于常宝</a></nav>
+<nav class="main-nav" id="main-nav" aria-label="主导航"><a href="{prefix}index.html">首页</a><a href="{prefix}daily/" aria-current="page">AI 日报</a><a href="{prefix}index.html#projects">实践手记</a><a href="{prefix}index.html#learning">学习方向</a><a href="{prefix}index.html#about">关于常宝</a></nav>
 </div></header>
 <main class="shell" id="main-content">{body}</main>
 <footer class="site-footer"><div class="shell footer-inner"><a class="footer-brand" href="{prefix}index.html">和AI一起学习<span> / 常宝的学习手记</span></a><span>慢慢理解，持续实践。</span><a class="back-top" href="#top">回到顶部 ↑</a></div></footer>
@@ -119,31 +120,36 @@ def article(report, reports):
     newer = f'<a href="../{reports[idx-1]["date"]}/"><span>下一期 →</span><strong>{esc(reports[idx-1]["title"])}</strong></a>' if idx > 0 else '<a href="../"><span>继续阅读 →</span><strong>浏览日报归档</strong></a>'
     body = f'''<div class="breadcrumb"><a href="../../index.html">首页</a><span>/</span><a href="../">学习日报</a><span>/</span><span>{day}</span></div>
 <header class="article-head"><p class="eyebrow">THE DAILY NOTE / 学习日报</p>{tags(report)}<h1>{esc(report["title"])}</h1><p class="intro">{esc(report["summary"])}</p>
-<div class="article-meta"><span>常宝的学习手记</span><time datetime="{day}">{day}</time><span>约 {reading_minutes(report)} 分钟阅读</span>{bookmark(day)}<button type="button" class="button quiet js-only" data-copy-link>复制链接 ↗</button></div>
+<div class="article-meta"><span>常宝的学习手记</span><time datetime="{day}">{day}</time><span>约 {reading_minutes(report)} 分钟阅读</span>{bookmark(day)}<button type="button" class="button quiet js-only" data-copy-link>复制链接</button></div>
 <p class="feedback" data-storage-status role="status"></p><p class="feedback" data-share-status role="status"></p>
 </header>
 <div class="article-layout"><article class="article-body" data-reading-body>
 <div class="editor-note"><span class="eyebrow">本期说明</span><p>{esc(report["coverage"])}</p><p>由 ChatGPT“每日重点简报”筛选整理，关键事实已核对来源。解读和练习为 AI 整理的学习建议，供继续探索。</p></div>
 {"".join(blocks)}
 <section class="practice-block" id="practice"><p class="eyebrow">FROM READING TO DOING</p><h2>把一个问题，变成一次尝试。</h2><ol>{suggestions}</ol><p class="news-date">以上为建议练习，尚未标记为个人已完成成果。</p></section>
-</article><aside class="article-toc" aria-label="本期阅读目录"><p class="eyebrow">本期目录</p><ol class="toc-list">{"".join(toc)}<li><a href="#practice"><span>↗</span>动手做一个小练习</a></li></ol><div class="toc-note">读到这里，有没有一个问题<br>值得自己试一试？</div><a class="text-link" href="../">查看全部日报 →</a></aside></div>
+</article><aside class="article-toc" aria-label="本期阅读目录"><details class="toc-panel" data-toc-panel open><summary><span>本期目录</span><span class="toc-count">{len(report["items"])} 条观察</span><span class="disclosure-icon" aria-hidden="true">⌄</span></summary><div class="toc-content"><ol class="toc-list">{"".join(toc)}<li><a href="#practice"><span>→</span>动手做一个小练习</a></li></ol><a class="text-link" href="../">查看全部日报 →</a></div></details></aside></div>
 <nav class="reading-nav" aria-label="日报翻页">{older}{newer}</nav>'''
     return page(f"AI 日报 · {day}", report["summary"], body, "../../", reading=True)
 
 
 def archive(reports):
     cards = []
-    topics = sorted({t for report in reports for t in report.get("topics", [])})
+    topic_counts = Counter(t for report in reports for t in set(report.get("topics", [])))
+    topics = sorted(topic_counts, key=lambda t: (-topic_counts[t], t))
     for n, r in enumerate(reports):
         day = r["date"]
         cards.append(f'''<article class="archive-card" data-report data-date="{day}" data-search="{esc(searchable(r))}" data-topics="{esc(json.dumps(r.get("topics", []), ensure_ascii=False))}">
 <div class="archive-meta"><time datetime="{day}">{day.replace("-", ".")}</time><span>第 {len(reports)-n:02d} 期</span></div>
 <div class="archive-content">{tags(r)}<h2 class="archive-title"><a href="{day}/">{esc(r["title"])}</a></h2><p class="archive-summary">{esc(r["summary"])}</p><div class="archive-footer"><span>{len(r["items"])} 则观察 · 约 {reading_minutes(r)} 分钟</span><a class="text-link" href="{day}/">阅读这期 <span aria-hidden="true">↗</span></a></div></div>{bookmark(day)}</article>''')
-    filters = '<button type="button" class="filter-chip" data-topic="" aria-pressed="true">全部主题</button>' + "".join(f'<button type="button" class="filter-chip" data-topic="{esc(t)}" aria-pressed="false">{esc(t)}</button>' for t in topics)
+    def topic_button(topic):
+        return f'<button type="button" class="filter-chip" data-topic="{esc(topic)}" aria-pressed="false">{esc(topic)} <span class="topic-count">{topic_counts[topic]}</span></button>'
+
+    filters = '<button type="button" class="filter-chip" data-topic="" aria-pressed="true">全部主题</button>' + "".join(topic_button(t) for t in topics[:4])
+    more_topics = f'<details class="more-topics" data-more-topics><summary>更多主题 <span class="topic-count">{len(topics) - 4}</span><span class="disclosure-icon" aria-hidden="true">⌄</span></summary><div class="filter-list">{"".join(topic_button(t) for t in topics[4:])}</div></details>' if len(topics) > 4 else ""
     body = f'''<header class="page-hero"><p class="eyebrow">THE DAILY NOTES / 日常积累</p><h1>每天读一点，<br><em>再想深一点。</em></h1><p class="intro">把值得留意的 AI 进展，整理成可以回看的学习线索。<br>每一期，都留下来源、问题和下一次实践的起点。</p><div class="archive-overview"><span><strong>{len(reports):02d}</strong> 期学习日报</span><span>最近更新 <time datetime="{reports[0]["date"]}">{reports[0]["date"].replace("-", ".")}</time></span></div></header>
 <section data-archive aria-label="日报归档">
 <div class="archive-tools js-only"><label class="search-field" for="daily-search"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="m16 16 5 5" stroke="currentColor" stroke-width="1.5"/></svg><span class="sr-only">搜索日报全文</span><input id="daily-search" type="search" placeholder="搜索一个话题、关键词或日期…" autocomplete="off"></label><button class="button quiet" type="button" data-saved-filter aria-pressed="false">只看收藏</button></div>
-<div class="filter-list js-only" aria-label="按主题筛选">{filters}</div>
+<div class="topic-filters js-only" aria-label="按主题筛选"><div class="filter-list">{filters}</div>{more_topics}<p class="active-topic" data-active-topic hidden></p></div>
 <div class="archive-caption"><p id="result-count" role="status" aria-live="polite">{len(reports)} 篇日报</p><span>按时间倒序排列</span></div>
 <p class="feedback" data-storage-status role="status"></p>
 <div class="archive-list">{"".join(cards)}</div>
@@ -156,12 +162,11 @@ def archive(reports):
 
 def teaser(reports):
     latest = reports[0]
-    older = reports[1] if len(reports) > 1 else None
-    recent = f'<div class="daily-previous"><span class="eyebrow">也值得回看</span><a href="daily/{older["date"]}/">{esc(older["title"])} <span aria-hidden="true">↗</span></a><time datetime="{older["date"]}">{older["date"].replace("-", ".")}</time></div>' if older else '<p class="section-note">从第一期开始，一点点积累。</p>'
+    recent = '<ol class="recent-notes">' + "".join(f'<li><time datetime="{r["date"]}">{r["date"].replace("-", ".")}</time><a href="daily/{r["date"]}/">{esc(r["title"])}</a></li>' for r in reports[1:4]) + '</ol>' if len(reports) > 1 else '<p class="section-note">从第一期开始，一点点积累。</p>'
     return f'''{START}
-<section id="daily" class="home-daily"><div class="section-head"><div><p class="eyebrow">01 / DAILY NOTES</p><h2>新鲜的观察，慢慢的思考。</h2></div><a class="text-link" href="daily/">翻阅全部日报 <span aria-hidden="true">↗</span></a></div>
+<section id="daily" class="home-daily"><div class="section-head"><div><p class="eyebrow">学习日报</p><h2>最近的学习记录</h2></div><a class="text-link" href="daily/">查看全部 <span aria-hidden="true">→</span></a></div>
 <div class="daily-layout"><article class="daily-feature"><div class="daily-date"><span class="eyebrow">最新一期</span><time datetime="{latest["date"]}">{latest["date"].replace("-", ".")}</time></div>{tags(latest)}<h3><a href="daily/{latest["date"]}/">{esc(latest["title"])}</a></h3><p>{esc(latest["summary"])}</p><div class="daily-feature-footer"><a class="button primary" href="daily/{latest["date"]}/">阅读这期日报 <span aria-hidden="true">↗</span></a><span>{len(latest["items"])} 则观察 · 约 {reading_minutes(latest)} 分钟</span></div></article>
-<aside class="daily-side"><p class="eyebrow">一点点积累，也算数。</p><div class="daily-stats"><div><strong>{len(reports):02d}</strong><span>期学习日报</span></div><div><strong>{sum(len(r["items"]) for r in reports):02d}</strong><span>则前沿观察</span></div></div>{recent}<a class="text-link js-only" href="daily/?saved=1">打开我的收藏 →</a></aside></div></section>
+<aside class="daily-side" aria-labelledby="recent-notes-title"><h3 id="recent-notes-title">前几期，也值得回看</h3>{recent}<div class="daily-side-footer"><p>{len(reports)} 期日报 · {sum(len(r["items"]) for r in reports)} 则观察</p><a class="text-link js-only" href="daily/?saved=1">我的收藏 →</a></div></aside></div></section>
 {END}'''
 
 
