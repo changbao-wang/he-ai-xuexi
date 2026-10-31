@@ -6,11 +6,12 @@ import re
 from collections import Counter
 from datetime import date
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 START, END = "<!-- DAILY:START -->", "<!-- DAILY:END -->"
 ASSET_VERSION = "4"
+IMAGE_SUFFIXES = {".svg", ".webp", ".png", ".jpg", ".jpeg"}
 
 
 def esc(value):
@@ -28,6 +29,50 @@ def valid_date(value):
     return date.fromisoformat(value)
 
 
+def validate_image_path(value):
+    if not isinstance(value, str) or not value.startswith("assets/daily/"):
+        raise ValueError("日报图片必须使用 assets/daily/ 下的仓库相对路径")
+    if any(char in value for char in "\\%?#:") or any(ord(char) < 32 for char in value):
+        raise ValueError("日报图片路径不能包含转义、反斜线、协议、查询或片段")
+    url = urlparse(value)
+    if url.scheme or url.netloc or url.params or url.query or url.fragment or url.username or url.password:
+        raise ValueError("日报图片必须为不含凭据的本地路径")
+    if any(part in ("", ".", "..") for part in value.split("/")):
+        raise ValueError("日报图片路径不能包含空段或路径穿越")
+    media_root = (ROOT / "assets/daily").resolve()
+    path = (ROOT / value).resolve()
+    if not media_root.is_relative_to(ROOT.resolve()) or not path.is_relative_to(media_root):
+        raise ValueError("日报图片不能离开仓库的 assets/daily/ 目录")
+    if path.suffix.lower() not in IMAGE_SUFFIXES or not path.is_file():
+        raise ValueError("日报图片必须是已存在的 SVG、WebP、PNG 或 JPEG 文件")
+
+
+def validate_images(item):
+    images = item.get("images", [])
+    if not isinstance(images, list) or len(images) > 2:
+        raise ValueError("每条消息的 images 必须为最多两张图片的列表")
+    for image in images:
+        if not isinstance(image, dict):
+            raise ValueError("每张日报图片必须为包含路径和说明的对象")
+        validate_image_path(image.get("src"))
+        for key in ("alt", "caption", "credit"):
+            if not isinstance(image.get(key), str) or not image[key].strip():
+                raise ValueError(f"日报图片缺少 {key}")
+        size_keys = ["width", "height"]
+        if "mobile_src" in image:
+            validate_image_path(image["mobile_src"])
+            size_keys.extend(("mobile_width", "mobile_height"))
+        elif "mobile_width" in image or "mobile_height" in image:
+            raise ValueError("手机图片尺寸需要配套的 mobile_src")
+        for key in size_keys:
+            if type(image.get(key)) is not int or image[key] <= 0:
+                raise ValueError(f"日报图片的 {key} 必须为正整数")
+        if "source_url" in image:
+            source_url = image["source_url"]
+            if not isinstance(source_url, str) or source_url not in {source["url"] for source in item["sources"]}:
+                raise ValueError("图片整理依据必须是本条消息已核验的来源链接")
+
+
 def validate(report, filename):
     edition = valid_date(report["date"])
     if filename.stem != report["date"]:
@@ -41,6 +86,8 @@ def validate(report, filename):
     if not report.get("items"):
         raise ValueError("已发布日报至少需要一条已核验消息")
     for item in report["items"]:
+        if not isinstance(item, dict):
+            raise ValueError("每条消息必须为对象")
         if item.get("verified") is not True or not item.get("sources"):
             raise ValueError("消息必须完成核验并附原始来源")
         if valid_date(item["event_date"]) > edition:
@@ -56,6 +103,7 @@ def validate(report, filename):
                 raise ValueError("来源发布时间不能晚于日报日期")
             if not source.get("name"):
                 raise ValueError("来源需要名称")
+        validate_images(item)
 
 
 def tags(report):
@@ -79,8 +127,9 @@ def bookmark(day):
     return f'''<button class="bookmark-button js-only" type="button" data-bookmark="{day}" aria-pressed="false" aria-label="收藏 {day} 日报"><svg width="16" height="18" viewBox="0 0 16 18" fill="none" aria-hidden="true"><path d="M3 2h10v14l-5-3-5 3V2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span data-bookmark-label>收藏</span></button>'''
 
 
-def page(title, description, body, prefix, reading=False):
+def page(title, description, body, prefix, reading=False, has_media=False):
     progress = '<div class="reading-progress js-only" data-reading-progress aria-hidden="true"></div>' if reading else ""
+    media_styles = f'<link rel="stylesheet" href="{prefix}assets/daily-media.css?v=1">\n' if has_media else ""
     return f'''<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -90,7 +139,7 @@ def page(title, description, body, prefix, reading=False):
 <link rel="icon" href="{prefix}assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="{prefix}assets/site.css?v={ASSET_VERSION}">
 <link rel="stylesheet" href="{prefix}assets/refinement.css?v=1">
-<script src="{prefix}assets/site.js?v={ASSET_VERSION}" defer></script>
+{media_styles}<script src="{prefix}assets/site.js?v={ASSET_VERSION}" defer></script>
 </head>
 <body id="top">{progress}
 <a class="skip-link" href="#main-content">跳到正文</a>
@@ -105,6 +154,22 @@ def page(title, description, body, prefix, reading=False):
 '''
 
 
+def item_media(item):
+    figures = []
+    for image in item.get("images", []):
+        original = esc("../../" + quote(image["src"], safe="/"))
+        mobile = ""
+        if "mobile_src" in image:
+            mobile = f'<source media="(max-width:600px)" srcset="{esc("../../" + quote(image["mobile_src"], safe="/"))}" width="{esc(image["mobile_width"])}" height="{esc(image["mobile_height"])}">'
+        basis = f'<a class="daily-figure-source" href="{esc(image["source_url"])}" target="_blank" rel="noopener noreferrer">整理依据 <span aria-hidden="true">↗</span></a>' if "source_url" in image else ""
+        label = esc("查看大图（新窗口打开）：" + image["alt"])
+        figures.append(f'''<figure class="daily-figure">
+<a class="daily-figure-image" href="{original}" target="_blank" rel="noopener noreferrer" aria-label="{label}"><picture>{mobile}<img src="{original}" width="{esc(image["width"])}" height="{esc(image["height"])}" loading="lazy" decoding="async" alt="{esc(image["alt"])}"></picture></a>
+<figcaption><span class="daily-figure-credit">{esc(image["credit"])}</span><span class="daily-figure-caption">{esc(image["caption"])}</span><span class="daily-figure-links">{basis}<a href="{original}" target="_blank" rel="noopener noreferrer" aria-label="{label}">查看大图 <span aria-hidden="true">↗</span></a></span></figcaption>
+</figure>\n''')
+    return "".join(figures)
+
+
 def article(report, reports):
     day = report["date"]
     source_note = "" if "ChatGPT" in report["coverage"] else "由 ChatGPT“每日重点简报”筛选整理。"
@@ -117,7 +182,7 @@ def article(report, reports):
 <p class="eyebrow">观察 {n:02d}</p><h2>{esc(item["title"])}</h2>
 <p class="news-date">消息 / 资料日期：<time datetime="{esc(item["event_date"])}">{esc(item["event_date"])}</time></p>
 <h3>发生了什么</h3><p>{esc(item["summary"])}</p>
-<h3>为什么值得研究 <span class="ai-label">AI 整理</span></h3><p>{esc(item["interpretation"])}</p>
+{item_media(item)}<h3>为什么值得研究 <span class="ai-label">AI 整理</span></h3><p>{esc(item["interpretation"])}</p>
 <div class="question"><span class="eyebrow">留一个问题</span><p>{esc(item["question"])}</p></div>
 <details class="source-list"><summary>核验来源 · {len(item["sources"])} 篇原文 <span aria-hidden="true">↗</span></summary><ul>{sources}</ul></details>
 </section>''')
@@ -136,7 +201,8 @@ def article(report, reports):
 <section class="practice-block" id="practice"><p class="eyebrow">FROM READING TO DOING</p><h2>把一个问题，变成一次尝试。</h2><ol>{suggestions}</ol><p class="news-date">以上为建议练习，尚未标记为个人已完成成果。</p></section>
 </article><aside class="article-toc" aria-label="本期阅读目录"><details class="toc-panel" data-toc-panel open><summary><span>本期目录</span><span class="toc-count">{len(report["items"])} 条观察</span><span class="disclosure-icon" aria-hidden="true">⌄</span></summary><div class="toc-content"><ol class="toc-list">{"".join(toc)}<li><a href="#practice"><span>→</span>动手做一个小练习</a></li></ol><a class="text-link" href="../">查看全部日报 →</a></div></details></aside></div>
 <nav class="reading-nav" aria-label="日报翻页">{older}{newer}</nav>'''
-    return page(f"AI 日报 · {day}", report["summary"], body, "../../", reading=True)
+    return page(f"AI 日报 · {day}", report["summary"], body, "../../", reading=True,
+                has_media=any(item.get("images") for item in report["items"]))
 
 
 def archive(reports):

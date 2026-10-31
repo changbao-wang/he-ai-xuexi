@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600" role="img" aria-labelledby="title desc">
+  <title id="title">跨应用协作：让资料进入同一个任务</title>
+  <desc id="desc">本站原创学习图解。文档、会议与知识库经工作台协同处理，形成任务成果。学习时关注来源、资料冲突与人工验收。</desc>
+  <defs>
+    <style>text{font-family:"Microsoft YaHei","PingFang SC",sans-serif;fill:#263e35}.small{font-size:18px;fill:#53675b}.label{font-size:23px;font-weight:600}.white{fill:#fffefa}.line{fill:none;stroke:#71967e;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}</style>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M1 1 6 4 1 7" fill="none" stroke="#71967e" stroke-width="1.5"/></marker>
+  </defs>
+  <rect width="960" height="600" rx="12" fill="#edf2e9"/>
+  <text x="48" y="47" class="small">学习图解 / AI 办公</text><text x="912" y="47" text-anchor="end" class="small">和AI一起学习</text>
+  <text x="48" y="108" style="font-size:36px;font-weight:600">让分散的资料，进入同一个任务</text>
+  <text x="48" y="147" class="small">从跨应用协作，理解工作流中的资料与交付</text>
+
+  <g>
+    <rect x="48" y="190" width="218" height="72" rx="8" fill="#fffefa" stroke="#cbd8c7"/>
+    <path d="M70 210h20l9 9v24H70z M90 210v10h9 M77 228h14 M77 235h14" class="line"/>
+    <text x="118" y="235" class="label">文档资料</text>
+    <rect x="48" y="282" width="218" height="72" rx="8" fill="#fffefa" stroke="#cbd8c7"/>
+    <rect x="78" y="298" width="14" height="23" rx="7" class="line"/><path d="M71 314v4a14 14 0 0 0 28 0v-4 M85 332v9 M76 341h18" class="line"/>
+    <text x="118" y="327" class="label">会议记录</text>
+    <rect x="48" y="374" width="218" height="72" rx="8" fill="#fffefa" stroke="#cbd8c7"/>
+    <path d="M71 395q12-5 24 1v26q-12-6-24-1z M95 396q12-6 24-1v26q-12-5-24 1z" class="line"/>
+    <text x="136" y="419" class="label">知识库</text>
+  </g>
+  <path d="M266 226h31q17 0 17 18v57q0 17 24 17h21 M266 318h93 M266 410h31q17 0 17-18v-57q0-17 24-17h21" class="line" marker-end="url(#arrow)"/>
+  <rect x="374" y="237" width="225" height="162" rx="12" fill="#315b4c"/>
+  <g stroke="#d9e8cf" fill="none" stroke-width="2"><rect x="468" y="262" width="36" height="27" rx="5"/><path d="M479 297h14 M486 289v8"/></g>
+  <text x="486" y="335" text-anchor="middle" class="white" style="font-size:29px;font-weight:600">WorkBuddy</text>
+  <text x="486" y="369" text-anchor="middle" class="white" style="font-size:18px">工作台 · 协同处理</text>
+  <path d="M599 318h66" class="line" marker-end="url(#arrow)"/>
+  <rect x="682" y="245" width="230" height="146" rx="10" fill="#fffefa" stroke="#cbd8c7"/>
+  <path d="M713 270h35 M713 282h35 M713 294h24 M866 273l8 8 16-19" class="line"/>
+  <text x="710" y="336" class="label">任务成果</text><text x="710" y="369" class="small">回到具体需求，检查输出</text>
+
+  <path d="M48 482h864" stroke="#c9d6c3"/>
+  <text x="48" y="520" class="small">继续研究</text>
+  <text x="48" y="560" style="font-size:22px">核对来源</text><text x="288" y="560" style="font-size:22px">保留资料冲突</text><text x="598" y="560" style="font-size:22px">人工验收成果</text>
+  <circle cx="247" cy="552" r="3" fill="#a88460"/><circle cx="556" cy="552" r="3" fill="#a88460"/>
+</svg>

@@ -4,7 +4,12 @@
   "title": "从工具到工作流：AI 办公、校园应用与视频交付",
   "summary": "跨应用办公怎样检查来源，校园助手怎样验证使用效果，AI 视频怎样记录完整成本？从三条已核验消息中，整理可以继续动手研究的问题。",
   "coverage": "本期取自 ChatGPT“每日重点简报”2026 年 10 月 31 日早间版，原简报信息截至北京时间 08:47。收录 10 月 30 日的校园研讨和视频制作报道；腾讯公告发布于 10 月 29 日，明确列作资料回顾。视频案例发生于 10 月 29—30 日大会期间，原文未单独注明分享所在日。消息事实、企业自报数据与 AI 整理的学习建议分别呈现，未核实实际产品表现或项目收益。",
-  "topics": ["AI 办公", "AI 教育", "AI 视频", "工作流"],
+  "topics": [
+    "AI 办公",
+    "AI 教育",
+    "AI 视频",
+    "工作流"
+  ],
   "items": [
     {
       "title": "资料回顾｜Buddy One 将办公应用组织到同一任务中",
@@ -14,7 +19,25 @@
       "interpretation": "跨应用任务可以先拆成取资料、核对事实、生成文档、人工验收几个步骤。用自建的虚构会议记录和进度表做小样本，要求输出逐项指向原始材料；遇到内容冲突时保留差异和待确认项。比较工具时记录任务是否完成、人工修正次数和实际消耗，不用产品宣传中的调用规模代替自己的验收结果。",
       "question": "当会议记录与进度表对同一事项说法不一致，怎样让 AI 展示两处来源、指出冲突，并把需要人工确认的内容保留在报告中？",
       "sources": [
-        {"name": "腾讯 · 腾讯云加快国际业务增长，推动企业级 AI 应用并拓展全球合作（10 月 29 日资料回顾）", "url": "https://www.tencent.com/zh-hk/tencent-cloud-accelerates-international-growth-advances-enterprise-ai-and-expands-global-partnerships/", "published_date": "2026-10-29"}
+        {
+          "name": "腾讯 · 腾讯云加快国际业务增长，推动企业级 AI 应用并拓展全球合作（10 月 29 日资料回顾）",
+          "url": "https://www.tencent.com/zh-hk/tencent-cloud-accelerates-international-growth-advances-enterprise-ai-and-expands-global-partnerships/",
+          "published_date": "2026-10-29"
+        }
+      ],
+      "images": [
+        {
+          "src": "assets/daily/2026-10-31/office-workflow.svg",
+          "mobile_src": "assets/daily/2026-10-31/office-workflow-mobile.svg",
+          "alt": "文档、会议记录和知识库进入 WorkBuddy 工作台协同处理，再对任务成果进行检查；学习时核对来源、保留资料冲突并人工验收。",
+          "caption": "根据腾讯 10 月 29 日公告整理的协作概念图；底部三个检查点为学习建议。",
+          "credit": "本站原创图解 · AI 整理",
+          "source_url": "https://www.tencent.com/zh-hk/tencent-cloud-accelerates-international-growth-advances-enterprise-ai-and-expands-global-partnerships/",
+          "width": 960,
+          "height": 600,
+          "mobile_width": 390,
+          "mobile_height": 650
+        }
       ]
     },
     {
@@ -25,7 +48,11 @@
       "interpretation": "学习校园 AI 应用，可以从范围明确的问答练习开始。为一个虚构课程准备少量资料，标明有效日期，设置可回答、资料缺失和规则冲突三类问题。先检查引用是否支持回答、缺信息时能否停止推断，再考虑扩展功能。课程设计也可以要求学员提交资料、问题集和修订记录，让评价依据落实到具体作品。",
       "question": "如果做一个虚构课程咨询助手，怎样设计资料过期、问题超范围和两份通知冲突的样例，并为每类样例写出预期处理方式？",
       "sources": [
-        {"name": "南方 Plus 客户端（搜狐号）· 广东省技工院校人工智能推进校园信息化建设实践探索研讨会在汕尾技师学院举行", "url": "https://www.sohu.com/a/1095083877_100116740", "published_date": "2026-10-30"}
+        {
+          "name": "南方 Plus 客户端（搜狐号）· 广东省技工院校人工智能推进校园信息化建设实践探索研讨会在汕尾技师学院举行",
+          "url": "https://www.sohu.com/a/1095083877_100116740",
+          "published_date": "2026-10-30"
+        }
       ]
     },
     {
@@ -36,7 +63,25 @@
       "interpretation": "这条案例适合引出一个成本记录练习：为自有或有权使用的短脚本建立任务表，分别记录剧本、资产、分镜、生成、返工和后期的工时与费用。保存素材版本、失败次数和验收意见，才能比较减少模型费用后是否增加了人工修改。先完成一个小片段，再决定是否扩展为完整项目；尚未实际制作的部分保持为计划。",
       "question": "同一个短片段尝试两条制作流程时，怎样在相同的画面与叙事验收要求下，比较总工时、生成费用、返工次数及最终可用镜头比例？",
       "sources": [
-        {"name": "中关村在线（新浪财经转载）· 麦芽传媒亮相腾讯全球数字生态大会，携跳跃视界分享 AI 短剧工业化实践", "url": "https://finance.sina.com.cn/roll/2026-10-30/doc-iniwzazq5500514.shtml", "published_date": "2026-10-30"}
+        {
+          "name": "中关村在线（新浪财经转载）· 麦芽传媒亮相腾讯全球数字生态大会，携跳跃视界分享 AI 短剧工业化实践",
+          "url": "https://finance.sina.com.cn/roll/2026-10-30/doc-iniwzazq5500514.shtml",
+          "published_date": "2026-10-30"
+        }
+      ],
+      "images": [
+        {
+          "src": "assets/daily/2026-10-31/video-workflow.svg",
+          "mobile_src": "assets/daily/2026-10-31/video-workflow-mobile.svg",
+          "alt": "AI 短剧制作链路依次为剧本开发、资产分镜、AI 制作、内容译制和海外发行；学习观察关注版本、质量与完整成本。",
+          "caption": "依据报道梳理制作链路；“版本、质量、成本”为建议继续观察的事项。",
+          "credit": "本站原创图解 · AI 整理",
+          "source_url": "https://finance.sina.com.cn/roll/2026-10-30/doc-iniwzazq5500514.shtml",
+          "width": 960,
+          "height": 600,
+          "mobile_width": 390,
+          "mobile_height": 650
+        }
       ]
     }
   ],

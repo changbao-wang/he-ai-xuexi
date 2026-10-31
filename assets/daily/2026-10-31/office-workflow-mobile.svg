@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="650" viewBox="0 0 390 650" role="img" aria-labelledby="title desc">
+  <title id="title">跨应用协作：让资料进入同一个任务（竖版）</title>
+  <desc id="desc">本站原创学习图解。文档、会议和知识库进入WorkBuddy工作台协同处理，形成任务成果；建议核对来源、保留资料冲突、人工验收。</desc>
+  <defs>
+    <style>text{font-family:"Microsoft YaHei","PingFang SC",sans-serif;fill:#263e35}.small{font-size:14px;fill:#53675b}.line{fill:none;stroke:#71967e;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}</style>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M1 1 6 4 1 7" fill="none" stroke="#71967e" stroke-width="1.5"/></marker>
+  </defs>
+  <rect width="390" height="650" rx="10" fill="#edf2e9"/>
+  <text x="24" y="35" class="small">学习图解 / AI 办公</text>
+  <text x="24" y="83" style="font-size:28px;font-weight:600">让分散的资料，</text>
+  <text x="24" y="123" style="font-size:28px;font-weight:600">进入同一个任务</text>
+  <rect x="24" y="157" width="104" height="91" rx="7" fill="#fffefa" stroke="#cbd8c7"/>
+  <path d="M64 171h17l8 8v30H64z M81 171v9h8 M69 188h14 M69 196h14" class="line"/>
+  <text x="76" y="233" text-anchor="middle" style="font-size:16px">文档资料</text>
+  <rect x="143" y="157" width="104" height="91" rx="7" fill="#fffefa" stroke="#cbd8c7"/>
+  <rect x="189" y="172" width="13" height="21" rx="6.5" class="line"/><path d="M183 187v5a13 13 0 0 0 26 0v-5 M196 205v7 M187 212h18" class="line"/>
+  <text x="195" y="233" text-anchor="middle" style="font-size:16px">会议记录</text>
+  <rect x="262" y="157" width="104" height="91" rx="7" fill="#fffefa" stroke="#cbd8c7"/>
+  <path d="M294 178q10-4 20 1v27q-10-5-20-1z M314 179q10-5 20-1v27q-10-4-20 1z" class="line"/>
+  <text x="314" y="233" text-anchor="middle" style="font-size:16px">知识库</text>
+  <path d="M76 248v18h119 M314 248v18H195 M195 248v34" class="line" marker-end="url(#arrow)"/>
+  <rect x="24" y="298" width="342" height="104" rx="10" fill="#315b4c"/>
+  <text x="195" y="341" text-anchor="middle" style="font-size:27px;font-weight:600;fill:#fffefa">WorkBuddy</text>
+  <text x="195" y="376" text-anchor="middle" style="font-size:16px;fill:#fffefa">工作台 · 协同处理</text>
+  <path d="M195 402v30" class="line" marker-end="url(#arrow)"/>
+  <rect x="24" y="448" width="342" height="79" rx="8" fill="#fffefa" stroke="#cbd8c7"/>
+  <text x="195" y="480" text-anchor="middle" style="font-size:21px;font-weight:600">任务成果</text>
+  <text x="195" y="508" text-anchor="middle" class="small">回到具体需求，检查输出</text>
+  <text x="24" y="566" class="small">继续研究</text>
+  <text x="24" y="596" style="font-size:15px">核对来源 · 保留资料冲突 · 人工验收</text>
+  <text x="24" y="630" class="small">和AI一起学习 · 原创学习图解</text>
+</svg>

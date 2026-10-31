@@ -1,0 +1,64 @@
+/* Optional daily illustrations: warm paper and pine ink. */
+.daily-figure {
+  max-width: 100%;
+  min-width: 0;
+  margin: 26px 0 30px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--paper);
+}
+
+.daily-figure-image,
+.daily-figure picture,
+.daily-figure img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+.daily-figure-image {
+  border-radius: 4px 4px 0 0;
+}
+
+.daily-figure img {
+  height: auto;
+  border-radius: 4px 4px 0 0;
+}
+
+.daily-figure figcaption {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 15px 18px 16px;
+  border-top: 1px solid var(--line);
+  color: #43594e;
+  font-size: 13px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.daily-figure-credit {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.daily-figure-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+}
+
+.daily-figure-links a {
+  color: #365d50;
+  text-decoration-thickness: 1px;
+}
+
+@media (max-width: 600px) {
+  .daily-figure {
+    margin-block: 22px 26px;
+  }
+
+  .daily-figure figcaption {
+    padding: 13px 14px 14px;
+  }
+}

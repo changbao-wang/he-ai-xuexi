@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600" role="img" aria-labelledby="title desc">
+  <title id="title">AI短剧：从剧本到完整作品的制作链路</title>
+  <desc id="desc">本站原创学习图解。制作链路包括剧本开发、资产分镜、AI制作、内容译制及海外发行。学习观察关注版本、质量与完整成本。</desc>
+  <defs>
+    <style>text{font-family:"Microsoft YaHei","PingFang SC",sans-serif;fill:#263e35}.small{font-size:18px;fill:#53675b}.line{fill:none;stroke:#648672;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}</style>
+    <pattern id="perforation" width="28" height="20" patternUnits="userSpaceOnUse"><rect x="8" y="5" width="12" height="10" rx="2" fill="#f6f5ee"/></pattern>
+  </defs>
+  <rect width="960" height="600" rx="12" fill="#f1efe6"/>
+  <text x="48" y="47" class="small">学习图解 / AI 视频</text><text x="912" y="47" text-anchor="end" class="small">和AI一起学习</text>
+  <text x="48" y="108" style="font-size:36px;font-weight:600">把生成的镜头，组织成完整交付</text>
+  <text x="48" y="147" class="small">沿着制作链路，关注每一步怎样衔接</text>
+
+  <rect x="48" y="190" width="864" height="204" rx="7" fill="#315b4c"/>
+  <rect x="48" y="190" width="864" height="20" fill="url(#perforation)"/>
+  <rect x="48" y="374" width="864" height="20" fill="url(#perforation)"/>
+  <g>
+    <rect x="61" y="219" width="157" height="146" rx="3" fill="#fffefa"/>
+    <path d="M116 240h39l12 12v46h-51z M155 240v13h12 M126 265h30 M126 277h30 M126 289h21" class="line"/>
+    <text x="140" y="340" text-anchor="middle" style="font-size:22px;font-weight:600">剧本开发</text>
+    <rect x="231" y="219" width="157" height="146" rx="3" fill="#e5ecde"/>
+    <circle cx="311" cy="255" r="12" class="line"/><path d="M291 289q0-20 20-20t20 20 M280 297h62" class="line"/>
+    <rect x="273" y="239" width="74" height="64" rx="3" class="line"/>
+    <text x="310" y="340" text-anchor="middle" style="font-size:22px;font-weight:600">资产分镜</text>
+    <rect x="401" y="219" width="157" height="146" rx="3" fill="#fffefa"/>
+    <rect x="440" y="244" width="79" height="53" rx="5" class="line"/><path d="m471 254 22 15-22 15z" fill="#648672"/>
+    <text x="480" y="340" text-anchor="middle" style="font-size:22px;font-weight:600">AI 制作</text>
+    <rect x="571" y="219" width="157" height="146" rx="3" fill="#e5ecde"/>
+    <path d="M609 246h75v35h-31l-13 13v-13h-31z M619 257h50 M619 269h34 M605 303h25 M638 303h42" class="line"/>
+    <text x="650" y="340" text-anchor="middle" style="font-size:22px;font-weight:600">内容译制</text>
+    <rect x="741" y="219" width="157" height="146" rx="3" fill="#fffefa"/>
+    <circle cx="820" cy="270" r="29" class="line"/><ellipse cx="820" cy="270" rx="12" ry="29" class="line"/><path d="M791 270h58 M797 253h46 M797 287h46" class="line"/>
+    <text x="820" y="340" text-anchor="middle" style="font-size:22px;font-weight:600">海外发行</text>
+  </g>
+  <text x="48" y="445" class="small">制作流程学习示意</text>
+  <path d="M48 467h864" stroke="#cfd4c6"/>
+  <text x="48" y="512" style="font-size:23px;font-weight:600">版本</text><text x="48" y="548" class="small">每次修改留痕</text>
+  <text x="350" y="512" style="font-size:23px;font-weight:600">质量</text><text x="350" y="548" class="small">按需求验收可用镜头</text>
+  <text x="653" y="512" style="font-size:23px;font-weight:600">成本</text><text x="653" y="548" class="small">同时记录费用与工时</text>
+</svg>
