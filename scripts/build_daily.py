@@ -10,11 +10,16 @@ from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 START, END = "<!-- DAILY:START -->", "<!-- DAILY:END -->"
-ASSET_VERSION = "3"
+ASSET_VERSION = "4"
 
 
 def esc(value):
     return html.escape(str(value), quote=True)
+
+
+def title_html(value):
+    return re.sub(r"\bAI (?:办公|应用|视频|短剧|漫剧|教育|工具|内容|工作流)",
+                  lambda match: f'<span class="title-phrase">{match.group()}</span>', esc(value))
 
 
 def valid_date(value):
@@ -84,6 +89,7 @@ def page(title, description, body, prefix, reading=False):
 <title>{esc(title)} · 常宝 · 和AI一起学习</title>
 <link rel="icon" href="{prefix}assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="{prefix}assets/site.css?v={ASSET_VERSION}">
+<link rel="stylesheet" href="{prefix}assets/refinement.css?v=1">
 <script src="{prefix}assets/site.js?v={ASSET_VERSION}" defer></script>
 </head>
 <body id="top">{progress}
@@ -91,7 +97,7 @@ def page(title, description, body, prefix, reading=False):
 <header class="site-header"><div class="shell header-inner">
 <a class="brand" href="{prefix}index.html"><span class="brand-mark" aria-hidden="true">和</span><span>和AI一起学习</span></a>
 <button class="menu-toggle js-only" type="button" data-menu-toggle aria-controls="main-nav" aria-expanded="false" aria-label="展开导航">菜单 <span aria-hidden="true">☰</span></button>
-<nav class="main-nav" id="main-nav" aria-label="主导航"><a href="{prefix}index.html">首页</a><a href="{prefix}daily/" aria-current="page">AI 日报</a><a href="{prefix}index.html#projects">实践手记</a><a href="{prefix}index.html#learning">学习方向</a><a href="{prefix}index.html#about">关于常宝</a></nav>
+<nav class="main-nav" id="main-nav" aria-label="主导航"><a href="{prefix}index.html">首页</a><a href="{prefix}daily/" aria-current="page">AI 日报</a><a href="{prefix}index.html#projects">实践手记</a><a href="{prefix}index.html#learning">学习方向</a><a href="{prefix}about/">关于常宝</a></nav>
 </div></header>
 <main class="shell" id="main-content">{body}</main>
 <footer class="site-footer"><div class="shell footer-inner"><a class="footer-brand" href="{prefix}index.html">和AI一起学习<span> / 常宝的学习手记</span></a><span>慢慢理解，持续实践。</span><a class="back-top" href="#top">回到顶部 ↑</a></div></footer>
@@ -101,6 +107,7 @@ def page(title, description, body, prefix, reading=False):
 
 def article(report, reports):
     day = report["date"]
+    source_note = "" if "ChatGPT" in report["coverage"] else "由 ChatGPT“每日重点简报”筛选整理。"
     blocks, toc = [], []
     for n, item in enumerate(report["items"], 1):
         anchor = f"news-{n}"
@@ -119,12 +126,12 @@ def article(report, reports):
     older = f'<a href="../{reports[idx+1]["date"]}/"><span>← 上一期</span><strong>{esc(reports[idx+1]["title"])}</strong></a>' if idx + 1 < len(reports) else '<a href="../"><span>← 回到目录</span><strong>翻阅全部学习日报</strong></a>'
     newer = f'<a href="../{reports[idx-1]["date"]}/"><span>下一期 →</span><strong>{esc(reports[idx-1]["title"])}</strong></a>' if idx > 0 else '<a href="../"><span>继续阅读 →</span><strong>浏览日报归档</strong></a>'
     body = f'''<div class="breadcrumb"><a href="../../index.html">首页</a><span>/</span><a href="../">学习日报</a><span>/</span><span>{day}</span></div>
-<header class="article-head"><p class="eyebrow">THE DAILY NOTE / 学习日报</p>{tags(report)}<h1>{esc(report["title"])}</h1><p class="intro">{esc(report["summary"])}</p>
+<header class="article-head"><p class="eyebrow">THE DAILY NOTE / 学习日报</p>{tags(report)}<h1>{title_html(report["title"])}</h1><p class="intro">{esc(report["summary"])}</p>
 <div class="article-meta"><span>常宝的学习手记</span><time datetime="{day}">{day}</time><span>约 {reading_minutes(report)} 分钟阅读</span>{bookmark(day)}<button type="button" class="button quiet js-only" data-copy-link>复制链接</button></div>
 <p class="feedback" data-storage-status role="status"></p><p class="feedback" data-share-status role="status"></p>
 </header>
 <div class="article-layout"><article class="article-body" data-reading-body>
-<div class="editor-note"><span class="eyebrow">本期说明</span><p>{esc(report["coverage"])}</p><p>由 ChatGPT“每日重点简报”筛选整理，关键事实已核对来源。解读和练习为 AI 整理的学习建议，供继续探索。</p></div>
+<div class="editor-note"><span class="eyebrow">本期说明</span><p>{esc(report["coverage"])}</p><p>{source_note}关键事实已核对来源。解读和练习为 AI 整理的学习建议，供继续探索。</p></div>
 {"".join(blocks)}
 <section class="practice-block" id="practice"><p class="eyebrow">FROM READING TO DOING</p><h2>把一个问题，变成一次尝试。</h2><ol>{suggestions}</ol><p class="news-date">以上为建议练习，尚未标记为个人已完成成果。</p></section>
 </article><aside class="article-toc" aria-label="本期阅读目录"><details class="toc-panel" data-toc-panel open><summary><span>本期目录</span><span class="toc-count">{len(report["items"])} 条观察</span><span class="disclosure-icon" aria-hidden="true">⌄</span></summary><div class="toc-content"><ol class="toc-list">{"".join(toc)}<li><a href="#practice"><span>→</span>动手做一个小练习</a></li></ol><a class="text-link" href="../">查看全部日报 →</a></div></details></aside></div>
